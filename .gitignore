@@ -23,5 +23,20 @@
 hs_err_pid*
 replay_pid*
 
+# AI
+.claude
+specs.md
+
 # Kotlin Gradle plugin data, see https://kotlinlang.org/docs/whatsnew20.html#new-directory-for-kotlin-data-in-gradle-projects
 .kotlin/
+
+# Vaadin/js
+package.json
+package-lock.json
+tsconfig.json
+types.d.ts
+vite.config.ts
+vite.generated.ts
+node_modules
+**/src/main/frontend/
+target/
