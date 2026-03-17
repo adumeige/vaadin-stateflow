@@ -2,12 +2,12 @@ package org.antoined.vaadinstateflow.viewmodel
 
 import com.github.mvysny.karibudsl.v10.KComposite
 import com.vaadin.flow.component.Component
-import com.vaadin.flow.component.Composite
 import com.vaadin.flow.component.HasElement
-import com.vaadin.flow.component.orderedlayout.VerticalLayout
-import org.antoined.vaadinstateflow.core.FlowObserver
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import org.antoined.vaadinstateflow.core.flowObserver
-import org.atmosphere.config.service.Get
 
 /**
  * Base view class that manages a [ViewModel]'s lifecycle alongside the Vaadin component lifecycle.
@@ -36,8 +36,14 @@ abstract class StateFlowView<VM : ViewModel>(
 
     override fun onDetach(detachEvent: com.vaadin.flow.component.DetachEvent) {
         viewModel.onDetach()
+        observer.cancel()
         super.onDetach(detachEvent)
     }
+
+    /** Derives a new [StateFlow] by transforming each value of the source flow.
+     *  Uses the ViewModel's [scope] and [SharingStarted.Eagerly]. */
+    fun <T, R> StateFlow<T>.deriveState(transform: (T) -> R): StateFlow<R> =
+        map(transform).stateIn(viewModel.scope, SharingStarted.Eagerly, transform(value))
 
     /** Called after the ViewModel is created and attached. Build your UI here. */
 //    protected abstract fun initView()

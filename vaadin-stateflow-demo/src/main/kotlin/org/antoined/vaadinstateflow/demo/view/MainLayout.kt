@@ -17,12 +17,14 @@ class MainLayout : AppLayout() {
             style.set("margin", "0")
         }
 
+
         val nav = SideNav().apply {
             addItem(SideNavItem("Counter", CounterView::class.java))
             addItem(SideNavItem("Bindings", BindingsView::class.java))
             addItem(SideNavItem("List", ListView::class.java))
             addItem(SideNavItem("Form", FormView::class.java))
             addItem(SideNavItem("Async", AsyncView::class.java))
+            addItem(SideNavItem("Derivations", DerivationsView::class.java))
         }
 
         addToDrawer(Scroller(nav))
