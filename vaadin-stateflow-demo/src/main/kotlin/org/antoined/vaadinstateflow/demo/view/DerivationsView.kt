@@ -22,7 +22,7 @@ class DerivationsView(service: RandomProviderService) :
         horizontalLayout {
             verticalLayout {
                 textField { bindValue(viewModel.nameFlow) }
-                textField { bindValue(viewModel.personFlow.deriveState { it.email }) }
+                textField { bindValue(viewModel.personFlow.reflow { it.email }) }
             }
 
             grid<Product> {

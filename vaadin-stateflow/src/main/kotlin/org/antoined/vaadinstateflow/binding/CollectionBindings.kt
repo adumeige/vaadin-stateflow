@@ -4,6 +4,7 @@ import com.vaadin.flow.component.Component
 import com.vaadin.flow.component.combobox.ComboBox
 import com.vaadin.flow.component.grid.Grid
 import com.vaadin.flow.component.select.Select
+import com.vaadin.flow.component.virtuallist.VirtualList
 import kotlinx.coroutines.flow.StateFlow
 import org.antoined.vaadinstateflow.core.flowObserver
 
@@ -24,6 +25,13 @@ fun <T> ComboBox<T>.bindItems(flow: StateFlow<List<T>>) {
 }
 
 fun <T> Select<T>.bindItems(flow: StateFlow<List<T>>) {
+    (this as Component).flowObserver().observe(flow) { items ->
+        setItems(items)
+    }
+}
+
+
+fun <T> VirtualList<T>.bindItems(flow: StateFlow<List<T>>) {
     (this as Component).flowObserver().observe(flow) { items ->
         setItems(items)
     }

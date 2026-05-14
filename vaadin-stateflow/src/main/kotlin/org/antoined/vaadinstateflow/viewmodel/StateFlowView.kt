@@ -42,7 +42,7 @@ abstract class StateFlowView<VM : ViewModel>(
 
     /** Derives a new [StateFlow] by transforming each value of the source flow.
      *  Uses the ViewModel's [scope] and [SharingStarted.Eagerly]. */
-    fun <T, R> StateFlow<T>.deriveState(transform: (T) -> R): StateFlow<R> =
+    fun <T, R> StateFlow<T>.reflow(transform: (T) -> R): StateFlow<R> =
         map(transform).stateIn(viewModel.scope, SharingStarted.Eagerly, transform(value))
 
     /** Called after the ViewModel is created and attached. Build your UI here. */
