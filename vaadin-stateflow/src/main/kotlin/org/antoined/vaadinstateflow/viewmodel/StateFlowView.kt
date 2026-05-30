@@ -3,11 +3,32 @@ package org.antoined.vaadinstateflow.viewmodel
 import com.github.mvysny.karibudsl.v10.KComposite
 import com.vaadin.flow.component.Component
 import com.vaadin.flow.component.HasElement
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import org.antoined.vaadinstateflow.core.flowObserver
+
+abstract class StateFlowComponent(
+    private val scope: CoroutineScope
+) : KComposite() {
+    protected val observer = flowObserver()
+
+    override fun onDetach(detachEvent: com.vaadin.flow.component.DetachEvent) {
+        observer.cancel()
+        super.onDetach(detachEvent)
+    }
+
+    /**
+     * Derives a new [StateFlow] by transforming each value of the source flow.
+     * Uses the ViewModel's [scope] and [SharingStarted.Eagerly].
+     */
+    fun <T, R> StateFlow<T>.reflow(transform: (T) -> R): StateFlow<R> =
+        map(transform).stateIn(scope, SharingStarted.Eagerly, transform(value))
+
+
+}
 
 /**
  * Base view class that manages a [ViewModel]'s lifecycle alongside the Vaadin component lifecycle.
@@ -16,22 +37,16 @@ import org.antoined.vaadinstateflow.core.flowObserver
  * and detached (scope cancelled) when the view detaches.
  */
 abstract class StateFlowView<VM : ViewModel>(
-    private val viewModelProvider: () -> VM
-
-//) : Composite<VerticalLayout>() {
-) : KComposite() {
+    private val viewModelProvider: () -> VM,
     val viewModel: VM = viewModelProvider()
-    protected val observer = flowObserver()
+//) : Composite<VerticalLayout>() {
+) : StateFlowComponent(viewModel.scope) {
 
-
-//    protected  var observer: FlowObserver
-//        private set
+//    protected val observer = flowObserver()
 
     override fun onAttach(attachEvent: com.vaadin.flow.component.AttachEvent) {
         super.onAttach(attachEvent)
-//        observer = flowObserver()
         viewModel.onAttach()
-//        initView()
     }
 
     override fun onDetach(detachEvent: com.vaadin.flow.component.DetachEvent) {
@@ -40,14 +55,15 @@ abstract class StateFlowView<VM : ViewModel>(
         super.onDetach(detachEvent)
     }
 
-    /** Derives a new [StateFlow] by transforming each value of the source flow.
-     *  Uses the ViewModel's [scope] and [SharingStarted.Eagerly]. */
-    fun <T, R> StateFlow<T>.reflow(transform: (T) -> R): StateFlow<R> =
-        map(transform).stateIn(viewModel.scope, SharingStarted.Eagerly, transform(value))
+//    /**
+//     * Derives a new [StateFlow] by transforming each value of the source flow.
+//     * Uses the ViewModel's [scope] and [SharingStarted.Eagerly].
+//     */
+//    fun <T, R> StateFlow<T>.reflow(transform: (T) -> R): StateFlow<R> =
+//        map(transform).stateIn(viewModel.scope, SharingStarted.Eagerly, transform(value))
 
-    /** Called after the ViewModel is created and attached. Build your UI here. */
-//    protected abstract fun initView()
 }
+
 
 /**
  * Karibu-DSL style: attach a ViewModel to any component.

@@ -17,6 +17,21 @@ abstract class ViewModel {
 
     val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
+    /**
+     * Whether [onDetach] should cancel [scope]. Default `true` matches the
+     * common case where the ViewModel and its view share a lifecycle
+     * (one VM per view instance).
+     *
+     * Override to `false` when the VM outlives the view — typically
+     * `@VaadinSessionScope` or any singleton VM that survives page
+     * reloads. With the default behaviour, the VM's `scope` would be
+     * cancelled on detach but the VM instance would be reused on the
+     * next attach, leaving every derived StateFlow (`reflow`, `stateIn`)
+     * silently dead. VMs that opt out are responsible for cancelling
+     * [scope] themselves at the appropriate point (e.g. `@PreDestroy`).
+     */
+    protected open val cancelScopeOnDetach: Boolean = true
+
     /** Called when the associated view is attached to the UI. */
     open fun onAttach() {}
 
@@ -27,8 +42,12 @@ abstract class ViewModel {
     fun <T, R> StateFlow<T>.deriveState(transform: (T) -> R): UIStateFlow<R> =
         asUIStateFlow().deriveState(transform)
 
-    /** Called when the associated view is detached. Cancels the coroutine scope. */
+    /**
+     * Called when the associated view is detached. Cancels the coroutine
+     * scope by default; see [cancelScopeOnDetach] to opt out for VMs whose
+     * lifecycle is wider than the view's.
+     */
     open fun onDetach() {
-        scope.cancel()
+        if (cancelScopeOnDetach) scope.cancel()
     }
 }

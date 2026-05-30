@@ -1,5 +1,6 @@
 package org.antoined.vaadinstateflow.core
 
+import com.vaadin.flow.component.Component
 import com.vaadin.flow.data.provider.ListDataProvider
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.SharingStarted
@@ -27,13 +28,13 @@ class UIStateFlow<T>(
 }
 
 /**
- * Creates a [ListDataProvider] backed by this [UIStateFlow] of a list.
+ * Creates a [ListDataProvider] backed by this [StateFlow] of a collection.
  *
  * The data provider is initialized with the current flow value and automatically
- * refreshes whenever the flow emits a new list. The [FlowObserver] ties collection
+ * refreshes whenever the flow emits a new collection. The [FlowObserver] ties collection
  * to the component lifecycle (cancelled on detach) and dispatches via UI.access().
  */
-fun <T> UIStateFlow<List<T>>.toDataProvider(observer: FlowObserver): ListDataProvider<T> {
+fun <T, C : Collection<T>> StateFlow<C>.asDataProvider(observer: FlowObserver): ListDataProvider<T> {
     val items = ArrayList(value)
     val dataProvider = ListDataProvider(items)
     observer.observe(this) { newItems ->
@@ -43,3 +44,15 @@ fun <T> UIStateFlow<List<T>>.toDataProvider(observer: FlowObserver): ListDataPro
     }
     return dataProvider
 }
+
+/**
+ * Creates a [ListDataProvider] backed by this [StateFlow] and scoped to [component].
+ */
+fun <T, C : Collection<T>> StateFlow<C>.asDataProvider(component: Component): ListDataProvider<T> =
+    asDataProvider(component.flowObserver())
+
+/**
+ * Compatibility alias for the original UIStateFlow-specific API.
+ */
+fun <T> UIStateFlow<List<T>>.toDataProvider(observer: FlowObserver): ListDataProvider<T> =
+    asDataProvider(observer)

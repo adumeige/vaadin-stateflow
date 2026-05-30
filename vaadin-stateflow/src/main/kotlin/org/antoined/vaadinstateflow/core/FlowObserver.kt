@@ -34,8 +34,10 @@ class FlowObserver(private val ui: UI) {
      * Cancels all active observations and the underlying coroutine scope.
      */
     fun cancel() {
-        scope.cancel()
-        jobs.clear()
+        if (scope.isActive) {
+            scope.cancel()
+            jobs.clear()
+        }
     }
 
     companion object {
