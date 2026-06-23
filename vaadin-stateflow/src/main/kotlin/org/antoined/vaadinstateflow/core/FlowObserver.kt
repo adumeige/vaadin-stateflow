@@ -1,6 +1,7 @@
 package org.antoined.vaadinstateflow.core
 
 import com.vaadin.flow.component.UI
+import com.vaadin.flow.component.UIDetachedException
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.Flow
 import org.slf4j.LoggerFactory
@@ -23,7 +24,11 @@ class FlowObserver(private val ui: UI) {
     fun <T> observe(flow: Flow<T>, action: (T) -> Unit): Job {
         val job = scope.launch {
             flow.collect { value ->
-                ui.access { action(value) }
+                try {
+                    ui.access { action(value) }
+                } catch (_: UIDetachedException) {
+                    cancel()
+                }
             }
         }
         jobs.add(job)

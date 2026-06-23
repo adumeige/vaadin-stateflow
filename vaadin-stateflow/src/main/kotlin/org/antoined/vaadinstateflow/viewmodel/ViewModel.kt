@@ -39,8 +39,8 @@ abstract class ViewModel {
     fun <T> StateFlow<T>.asUIStateFlow(): UIStateFlow<T> = UIStateFlow(this, scope)
 
     /** Derives a new [UIStateFlow] by transforming each value of the source flow. */
-    fun <T, R> StateFlow<T>.deriveState(transform: (T) -> R): UIStateFlow<R> =
-        asUIStateFlow().deriveState(transform)
+    fun <T, R> StateFlow<T>.reflow(transform: (T) -> R): UIStateFlow<R> =
+        asUIStateFlow().reflow(transform)
 
     /**
      * Called when the associated view is detached. Cancels the coroutine

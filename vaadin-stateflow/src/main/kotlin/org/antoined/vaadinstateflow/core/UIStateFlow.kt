@@ -19,7 +19,7 @@ class UIStateFlow<T>(
     internal val scope: CoroutineScope
 ) : StateFlow<T> by delegate {
 
-    fun <R> deriveState(transform: (T) -> R): UIStateFlow<R> = UIStateFlow(
+    fun <R> reflow(transform: (T) -> R): UIStateFlow<R> = UIStateFlow(
         delegate.map(transform).stateIn(scope, SharingStarted.Eagerly, transform(value)),
         scope
     )
