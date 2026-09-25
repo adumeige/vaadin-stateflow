@@ -10,6 +10,6 @@ import org.antoined.vaadinstateflow.viewmodel.ViewModel
 class DerivationsViewModel(service: RandomProviderService) : ViewModel() {
 
     val personFlow: StateFlow<Person> = service.person
-    val nameFlow: StateFlow<String> = service.person.deriveState { it.name }
+    val nameFlow: StateFlow<String> = service.person.reflow { it.name }
     val hotProducts: UIStateFlow<List<Product>> = service.hotProducts.asUIStateFlow()
 }
