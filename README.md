@@ -68,52 +68,81 @@ hand-rolled `map(...).stateIn(...)` so the derived flow is cancelled with its ow
 
 ## Maven packages
 
-GitHub Actions builds pull requests and publishes snapshots to GitHub Packages on
-pushes to `main`. Tags matching `v*` and manual workflow runs also publish the
-version declared in the POM; tags do not change the Maven version.
-
-Add this repository to your application's `pom.xml`:
-
-```xml
-<repositories>
-    <repository>
-        <id>github-vaadin-stateflow</id>
-        <url>https://maven.pkg.github.com/adumeige/vaadin-stateflow</url>
-        <snapshots><enabled>true</enabled></snapshots>
-    </repository>
-</repositories>
-```
-
-Add a matching server to `~/.m2/settings.xml` (merge it into your existing
-`<servers>` section if present):
-
-```xml
-<settings>
-    <servers>
-        <server>
-            <id>github-vaadin-stateflow</id>
-            <username>${env.GITHUB_ACTOR}</username>
-            <password>${env.GITHUB_TOKEN}</password>
-        </server>
-    </servers>
-</settings>
-```
-
-Set `GITHUB_ACTOR` to your GitHub username and `GITHUB_TOKEN` to a personal access
-token (classic) with `read:packages` and access to this repository. GitHub Packages
-requires authentication for Maven downloads, including public packages; see the
-[GitHub Maven registry documentation](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-apache-maven-registry).
+Releases use the Maven Central coordinates below. Once `0.0.1` is published,
+consumers need only this dependency, with no extra repository or credentials:
 
 ```xml
 <dependency>
-    <groupId>org.antoined</groupId>
+    <groupId>io.github.adumeige.vaadin-stateflow</groupId>
     <artifactId>vaadin-stateflow</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.1</version>
 </dependency>
 ```
 
-CI verifies the library and demo, publishes the library and parent POM, and makes
-the library JAR available as a workflow artifact for seven days.
+The same signed artifacts are mirrored to
+[GitHub Packages](https://github.com/adumeige/vaadin-stateflow/packages) and attached
+to [GitHub Releases](https://github.com/adumeige/vaadin-stateflow/releases).
+GitHub Packages still requires a repository declaration and authenticated Maven
+downloads; Maven Central is the recommended source for consumers.
+
+The new Maven group replaces `org.antoined`. Kotlin package names and imports are
+unchanged. Pushes and pull requests build and test the library and demo; they do
+not publish snapshots or releases.
+
+### Publishing a release
+
+Configure these repository secrets in **Settings → Secrets and variables → Actions**:
+
+| Secret | Value |
+| --- | --- |
+| `CENTRAL_USERNAME` | Sonatype Central Portal token username |
+| `CENTRAL_PASSWORD` | Sonatype Central Portal token password |
+| `GPG_PRIVATE_KEY` | Full ASCII-armored exported private signing key |
+| `GPG_PASSPHRASE` | Signing key passphrase |
+
+The `io.github.adumeige` namespace must be verified in Central, and the public
+signing key must be on a supported keyserver, such as `keyserver.ubuntu.com`.
+The existing account token and signing key used for other projects can be reused.
+GitHub publishing uses the built-in `GITHUB_TOKEN`; no additional token secret is needed.
+
+1. Merge the release changes into `main` and check that CI passes.
+2. Open **Actions → Build and publish StateFlow → Run workflow**.
+3. Select `main` and enter a new release version, initially `0.0.1`.
+4. The workflow creates a release commit with versioned POMs, builds and signs
+   the parent POM and library once, and automatically publishes to Central.
+   It waits up to an hour for publication; no portal **Publish** click is required.
+5. It creates an annotated `v<version>` tag and draft GitHub Release, mirrors and
+   verifies the same signed artifacts in GitHub Packages, attaches downloadable
+   artifacts, and makes the release public with generated release notes.
+
+The demo is tested but excluded from publication. The library release includes
+Kotlin sources and a Dokka-generated API documentation JAR, plus signatures.
+The tag points to the versioned release commit; `main` keeps its snapshot version.
+Published versions are immutable, so choose a new version for each release.
+
+### Recovering an interrupted release
+
+Central and GitHub publication is sequential. If Central succeeds but the GitHub
+job fails, use **Re-run failed jobs** on that same Actions run. The retained bundle
+and source allow a retry for 90 days without rebuilding or republishing to Central.
+The mirror skips identical files already uploaded and rejects conflicting ones.
+The GitHub Release stays a draft until its packages and release assets succeed;
+its tag may already be visible.
+
+Do not rerun all jobs or start another run for a version already published to
+Central. If the Central job itself fails or times out, check the deployment in
+[Sonatype Central Portal](https://central.sonatype.com/publishing/deployments)
+first: publication may have continued after the runner stopped. The saved bundle
+allows manual recovery without rebuilding.
+
+To verify the release artifacts locally without signing or publishing:
+
+```bash
+mvn -Pcentral-release verify -pl vaadin-stateflow -am -Dgpg.skip=true
+```
+
+A local `-Pcentral-release deploy` stages for manual approval in Central by default;
+the workflow explicitly enables automatic publication.
 
 ## Setup
 
@@ -123,7 +152,7 @@ the library JAR available as a workflow artifact for seven days.
 class AppShell : AppShellConfigurator
 ```
 
-Coordinates: `org.antoined:vaadin-stateflow` (depends on `kotlinx-coroutines-core`;
+Coordinates: `io.github.adumeige.vaadin-stateflow:vaadin-stateflow` (depends on `kotlinx-coroutines-core`;
 Vaadin and `karibu-dsl` are expected on the app classpath).
 
 ---
