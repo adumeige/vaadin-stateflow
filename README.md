@@ -68,14 +68,14 @@ hand-rolled `map(...).stateIn(...)` so the derived flow is cancelled with its ow
 
 ## Maven packages
 
-Releases use the Maven Central coordinates below. Once `0.0.1` is published,
+Releases use the Maven Central coordinates below. Once `1.0.0` is published,
 consumers need only this dependency, with no extra repository or credentials:
 
 ```xml
 <dependency>
     <groupId>io.github.adumeige.vaadin-stateflow</groupId>
     <artifactId>vaadin-stateflow</artifactId>
-    <version>0.0.1</version>
+    <version>1.0.0</version>
 </dependency>
 ```
 
@@ -85,8 +85,8 @@ to [GitHub Releases](https://github.com/adumeige/vaadin-stateflow/releases).
 GitHub Packages still requires a repository declaration and authenticated Maven
 downloads; Maven Central is the recommended source for consumers.
 
-The new Maven group replaces `org.antoined`. Kotlin package names and imports are
-unchanged. Pushes and pull requests build and test the library and demo; they do
+The Maven group is `io.github.adumeige.vaadin-stateflow`; Kotlin packages and
+imports use `io.github.adumeige.vaadinstateflow` (including its subpackages). Pushes and pull requests build and test the library and demo; they do
 not publish snapshots or releases.
 
 ### Publishing a release
@@ -107,7 +107,7 @@ GitHub publishing uses the built-in `GITHUB_TOKEN`; no additional token secret i
 
 1. Merge the release changes into `main` and check that CI passes.
 2. Open **Actions → Build and publish StateFlow → Run workflow**.
-3. Select `main` and enter a new release version, initially `0.0.1`.
+3. Select `main` and enter a new release version, initially `1.0.0`.
 4. The workflow creates a release commit with versioned POMs, builds and signs
    the parent POM and library once, and automatically publishes to Central.
    It waits up to an hour for publication; no portal **Publish** click is required.
